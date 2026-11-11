@@ -31,62 +31,6 @@
     })(window,document,'script','dataLayer','GTM-PWXXZN4K');</script>
     <!-- End Google Tag Manager -->
 
-    <!-- 3. Suivi des conversions : clics sur les boutons d'appel + formulaire -->
-    <script>
-        (function () {
-            /* Google Ads : coller ici l'étiquette de conversion "Appel" (ex. 'AW-123456789/AbCdEfGhIjKlMn').
-               Laisser vide si la conversion est configurée dans GTM (déclencheur "clic_appel"). */
-            var ADS_CONVERSION_APPEL = '';
-            var ADS_CONVERSION_FORMULAIRE = '';
-            var VALEUR_CONVERSION = 1.0;
-
-            var adsId = (ADS_CONVERSION_APPEL || ADS_CONVERSION_FORMULAIRE).split('/')[0];
-            if (adsId) {
-                var g = document.createElement('script');
-                g.async = true;
-                g.src = 'https://www.googletagmanager.com/gtag/js?id=' + adsId;
-                document.head.appendChild(g);
-                gtag('js', new Date());
-                gtag('config', adsId);
-            }
-
-            function emplacement(el) {
-                if (el.getAttribute('data-emplacement')) return el.getAttribute('data-emplacement');
-                if (el.closest('header')) return 'header';
-                if (el.closest('footer')) return 'footer';
-                for (var n = el, i = 0; n && n !== document.body && i < 4; n = n.parentElement, i++) {
-                    if (getComputedStyle(n).position === 'fixed') return 'bouton_flottant';
-                }
-                var section = el.closest('section[id]');
-                return section ? section.id : 'autre';
-            }
-
-            document.addEventListener('click', function (e) {
-                var lien = e.target.closest && e.target.closest('a[href^="tel:"]');
-                if (!lien) return;
-                window.dataLayer.push({
-                    event: 'clic_appel',
-                    telephone: lien.getAttribute('href').replace(/^tel:/, ''),
-                    emplacement: emplacement(lien),
-                    texte_bouton: (lien.innerText || '').trim().slice(0, 60)
-                });
-                if (ADS_CONVERSION_APPEL) {
-                    gtag('event', 'conversion', { send_to: ADS_CONVERSION_APPEL, value: VALEUR_CONVERSION, currency: 'EUR' });
-                }
-            }, true);
-
-            document.addEventListener('submit', function (e) {
-                var form = e.target;
-                if (!form || form.tagName !== 'FORM') return;
-                var type = form.querySelector('[name="type"]');
-                window.dataLayer.push({ event: 'envoi_formulaire', service: type ? type.value : '' });
-                if (ADS_CONVERSION_FORMULAIRE) {
-                    gtag('event', 'conversion', { send_to: ADS_CONVERSION_FORMULAIRE, value: VALEUR_CONVERSION, currency: 'EUR' });
-                }
-            }, true);
-        })();
-    </script>
-
     <link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <title>NICO & FILS — Serrurier d'urgence 24h/24 · Ouverture de porte à partir de 49 € HT</title>
@@ -143,45 +87,41 @@
         ]
       }</script>
 
-    <!-- 4. Bandeau de consentement (injecté hors de #root pour ne pas gêner React) -->
+    <!-- Bandeau de consentement (repris du site d'Avignon) -->
     <style>
-        #cookie-banner{position:fixed;left:16px;right:16px;bottom:16px;max-width:480px;z-index:2147483000;background:#fff;color:#0B132B;border:1px solid #e2e8f0;border-radius:16px;padding:20px;box-shadow:0 15px 40px rgba(0,0,0,.18);font-family:'Manrope',sans-serif}
-        #cookie-banner p{margin:0 0 8px;font-size:.9rem;line-height:1.5}
-        #cookie-banner .cb-titre{font-weight:800;font-size:1rem}
-        #cookie-banner .cb-btns{display:flex;gap:10px;margin-top:14px}
-        #cookie-banner button{flex:1;padding:12px;border:0;border-radius:8px;font:700 .9rem 'Manrope',sans-serif;cursor:pointer}
-        #cookie-banner .cb-refuser{background:#f1f5f9;color:#475569}
-        #cookie-banner .cb-accepter{background:#0B132B;color:#fff}
+        /* POP-UP CONSENTEMENT */
+        #cookie-banner {
+            position: fixed; bottom: 20px; left: 20px; right: 20px;
+            background: #fff; border: 1px solid #e2e8f0;
+            border-radius: 16px; padding: 25px; z-index: 10000;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15); display: none;
+            max-width: 500px; font-family: 'Manrope', sans-serif; color: #0B132B;
+        }
+        #cookie-banner .banner-btns { display: flex; gap: 12px; margin-top: 20px; }
+        #cookie-banner .banner-btns button { flex: 1; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; border: none; transition: 0.3s; font-family: 'Manrope', sans-serif; }
+        #cookie-banner .btn-accept { background: #0B132B; color: white; }
+        #cookie-banner .btn-refuse { background: #f0f0f0; color: #666; }
     </style>
+
     <script>
         function updateConsent(status) {
-            var etat = status === 'granted' ? 'granted' : 'denied';
+            const consentStatus = status === 'granted' ? 'granted' : 'denied';
             gtag('consent', 'update', {
-                'ad_storage': etat,
-                'ad_user_data': etat,
-                'ad_personalization': etat,
-                'analytics_storage': etat
+                'ad_storage': consentStatus,
+                'ad_user_data': consentStatus,
+                'ad_personalization': consentStatus,
+                'analytics_storage': consentStatus
             });
-            window.dataLayer.push({ event: 'consentement_mis_a_jour', consentement: etat });
-            try { localStorage.setItem('consent_choice', etat); } catch (e) {}
-            var b = document.getElementById('cookie-banner');
-            if (b) b.remove();
+            document.getElementById('cookie-banner').style.display = 'none';
+            try { localStorage.setItem('consent_choice', consentStatus); } catch (e) {}
         }
-        document.addEventListener('DOMContentLoaded', function () {
+
+        window.addEventListener('load', function() {
             var choix = null;
             try { choix = localStorage.getItem('consent_choice'); } catch (e) {}
-            if (choix) return;
-            var b = document.createElement('div');
-            b.id = 'cookie-banner';
-            b.setAttribute('role', 'dialog');
-            b.setAttribute('aria-label', 'Consentement aux cookies');
-            b.innerHTML = '<p class="cb-titre">Respect de votre vie privée</p>'
-                + '<p>NICO &amp; FILS utilise des cookies pour mesurer l\'audience et l\'efficacité de ses annonces. Acceptez-vous ces technologies ?</p>'
-                + '<div class="cb-btns"><button type="button" class="cb-refuser">Refuser</button>'
-                + '<button type="button" class="cb-accepter">Accepter</button></div>';
-            b.querySelector('.cb-refuser').onclick = function () { updateConsent('denied'); };
-            b.querySelector('.cb-accepter').onclick = function () { updateConsent('granted'); };
-            document.body.appendChild(b);
+            if (!choix) {
+                document.getElementById('cookie-banner').style.display = 'block';
+            }
         });
     </script>
 
@@ -191,6 +131,16 @@
 <body>
     <!-- Google Tag Manager (noscript) : juste après <body> -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PWXXZN4K" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+    <div id="cookie-banner">
+        <p style="font-weight: 800; font-size: 1.1rem; margin-bottom: 10px;">Respect de votre vie privée 🛡️</p>
+        <p style="font-size: 0.9rem; color: #666;">NICO &amp; FILS utilise des cookies pour améliorer votre dépannage. Acceptez-vous l'utilisation de ces technologies ?</p>
+        <div class="banner-btns">
+            <button class="btn-refuse" onclick="updateConsent('denied')">Refuser</button>
+            <button class="btn-accept" onclick="updateConsent('granted')">Accepter</button>
+        </div>
+    </div>
+
     <noscript>Appelez NICO & FILS au 09 70 70 71 29 — serrurier d'urgence 24h/24, 7j/7.</noscript>
     <div id="root"></div>
 </body>
