@@ -3,27 +3,7 @@
 <head>
     <meta charset="utf-8"/>
 
-    <!-- 1. Consent Mode v2 : DOIT être déclaré AVANT Google Tag Manager -->
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        (function () {
-            var choix = null;
-            try { choix = localStorage.getItem('consent_choice'); } catch (e) {}
-            var etat = choix === 'granted' ? 'granted' : 'denied';
-            gtag('consent', 'default', {
-                'ad_storage': etat,
-                'ad_user_data': etat,
-                'ad_personalization': etat,
-                'analytics_storage': etat,
-                'wait_for_update': 500
-            });
-            gtag('set', 'ads_data_redaction', true);
-            gtag('set', 'url_passthrough', true);
-        })();
-    </script>
-
-    <!-- 2. Google Tag Manager -->
+    <!-- Google Tag Manager -->
     <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
     j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
@@ -87,59 +67,12 @@
         ]
       }</script>
 
-    <!-- Bandeau de consentement (repris du site d'Avignon) -->
-    <style>
-        /* POP-UP CONSENTEMENT */
-        #cookie-banner {
-            position: fixed; bottom: 20px; left: 20px; right: 20px;
-            background: #fff; border: 1px solid #e2e8f0;
-            border-radius: 16px; padding: 25px; z-index: 10000;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.15); display: none;
-            max-width: 500px; font-family: 'Manrope', sans-serif; color: #0B132B;
-        }
-        #cookie-banner .banner-btns { display: flex; gap: 12px; margin-top: 20px; }
-        #cookie-banner .banner-btns button { flex: 1; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; border: none; transition: 0.3s; font-family: 'Manrope', sans-serif; }
-        #cookie-banner .btn-accept { background: #0B132B; color: white; }
-        #cookie-banner .btn-refuse { background: #f0f0f0; color: #666; }
-    </style>
-
-    <script>
-        function updateConsent(status) {
-            const consentStatus = status === 'granted' ? 'granted' : 'denied';
-            gtag('consent', 'update', {
-                'ad_storage': consentStatus,
-                'ad_user_data': consentStatus,
-                'ad_personalization': consentStatus,
-                'analytics_storage': consentStatus
-            });
-            document.getElementById('cookie-banner').style.display = 'none';
-            try { localStorage.setItem('consent_choice', consentStatus); } catch (e) {}
-        }
-
-        window.addEventListener('load', function() {
-            var choix = null;
-            try { choix = localStorage.getItem('consent_choice'); } catch (e) {}
-            if (!choix) {
-                document.getElementById('cookie-banner').style.display = 'block';
-            }
-        });
-    </script>
-
     <script defer="defer" src="/static/js/main.9598b97e.js"></script>
     <link href="/static/css/main.c368d40c.css" rel="stylesheet">
 </head>
 <body>
-    <!-- Google Tag Manager (noscript) : juste après <body> -->
+    <!-- Google Tag Manager (noscript) -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PWXXZN4K" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-
-    <div id="cookie-banner">
-        <p style="font-weight: 800; font-size: 1.1rem; margin-bottom: 10px;">Respect de votre vie privée 🛡️</p>
-        <p style="font-size: 0.9rem; color: #666;">NICO &amp; FILS utilise des cookies pour améliorer votre dépannage. Acceptez-vous l'utilisation de ces technologies ?</p>
-        <div class="banner-btns">
-            <button class="btn-refuse" onclick="updateConsent('denied')">Refuser</button>
-            <button class="btn-accept" onclick="updateConsent('granted')">Accepter</button>
-        </div>
-    </div>
 
     <noscript>Appelez NICO & FILS au 09 70 70 71 29 — serrurier d'urgence 24h/24, 7j/7.</noscript>
     <div id="root"></div>
