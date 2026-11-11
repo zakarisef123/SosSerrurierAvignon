@@ -2,13 +2,92 @@
 <!doctype html>
 <html lang="fr">
 <head>
+    <meta charset="UTF-8" />
+
+    <!-- 1. Consent Mode v2 : DOIT être déclaré AVANT Google Tag Manager -->
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        (function () {
+            var choix = null;
+            try { choix = localStorage.getItem('consent_choice'); } catch (e) {}
+            var etat = choix === 'granted' ? 'granted' : 'denied';
+            gtag('consent', 'default', {
+                'ad_storage': etat,
+                'ad_user_data': etat,
+                'ad_personalization': etat,
+                'analytics_storage': etat,
+                'wait_for_update': 500
+            });
+            gtag('set', 'ads_data_redaction', true);
+            gtag('set', 'url_passthrough', true);
+        })();
+    </script>
+
+    <!-- 2. Google Tag Manager -->
     <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
     j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','GTM-PWXXZN4K');</script>
+    <!-- End Google Tag Manager -->
 
-    <meta charset="UTF-8" />
+    <!-- 3. Suivi des conversions : clics sur les boutons d'appel + formulaire -->
+    <script>
+        (function () {
+            /* Google Ads : coller ici l'étiquette de conversion "Appel" (ex. 'AW-123456789/AbCdEfGhIjKlMn').
+               Laisser vide si la conversion est configurée dans GTM (déclencheur "clic_appel"). */
+            var ADS_CONVERSION_APPEL = '';
+            var ADS_CONVERSION_FORMULAIRE = '';
+            var VALEUR_CONVERSION = 1.0;
+
+            var adsId = (ADS_CONVERSION_APPEL || ADS_CONVERSION_FORMULAIRE).split('/')[0];
+            if (adsId) {
+                var g = document.createElement('script');
+                g.async = true;
+                g.src = 'https://www.googletagmanager.com/gtag/js?id=' + adsId;
+                document.head.appendChild(g);
+                gtag('js', new Date());
+                gtag('config', adsId);
+            }
+
+            function emplacement(el) {
+                if (el.getAttribute('data-emplacement')) return el.getAttribute('data-emplacement');
+                if (el.closest('header')) return 'header';
+                if (el.closest('footer')) return 'footer';
+                for (var n = el, i = 0; n && n !== document.body && i < 4; n = n.parentElement, i++) {
+                    if (getComputedStyle(n).position === 'fixed') return 'bouton_flottant';
+                }
+                var section = el.closest('section[id]');
+                return section ? section.id : 'autre';
+            }
+
+            document.addEventListener('click', function (e) {
+                var lien = e.target.closest && e.target.closest('a[href^="tel:"]');
+                if (!lien) return;
+                window.dataLayer.push({
+                    event: 'clic_appel',
+                    telephone: lien.getAttribute('href').replace(/^tel:/, ''),
+                    emplacement: emplacement(lien),
+                    texte_bouton: (lien.innerText || '').trim().slice(0, 60)
+                });
+                if (ADS_CONVERSION_APPEL) {
+                    gtag('event', 'conversion', { send_to: ADS_CONVERSION_APPEL, value: VALEUR_CONVERSION, currency: 'EUR' });
+                }
+            }, true);
+
+            document.addEventListener('submit', function (e) {
+                var form = e.target;
+                if (!form || form.tagName !== 'FORM') return;
+                var type = form.querySelector('[name="type"]');
+                window.dataLayer.push({ event: 'envoi_formulaire', service: type ? type.value : '' });
+                if (ADS_CONVERSION_FORMULAIRE) {
+                    gtag('event', 'conversion', { send_to: ADS_CONVERSION_FORMULAIRE, value: VALEUR_CONVERSION, currency: 'EUR' });
+                }
+            }, true);
+        })();
+    </script>
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Serrurier Avignon & Vaucluse : Dépannage Ultra-Rapide | SOS SERRURIER</title>
 
@@ -129,16 +208,6 @@
     </style>
 
     <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('consent', 'default', {
-            'ad_storage': 'denied',
-            'ad_user_data': 'denied',
-            'ad_personalization': 'denied',
-            'analytics_storage': 'denied',
-            'wait_for_update': 500
-        });
-
         function updateConsent(status) {
             const consentStatus = status === 'granted' ? 'granted' : 'denied';
             gtag('consent', 'update', {
@@ -147,18 +216,22 @@
                 'ad_personalization': consentStatus,
                 'analytics_storage': consentStatus
             });
+            window.dataLayer.push({ event: 'consentement_mis_a_jour', consentement: consentStatus });
             document.getElementById('cookie-banner').style.display = 'none';
-            localStorage.setItem('choice_made', 'true');
+            try { localStorage.setItem('consent_choice', consentStatus); } catch (e) {}
         }
 
         window.addEventListener('load', function() {
-            if (!localStorage.getItem('choice_made')) {
+            var choix = null;
+            try { choix = localStorage.getItem('consent_choice'); } catch (e) {}
+            if (!choix) {
                 document.getElementById('cookie-banner').style.display = 'block';
             }
         });
     </script>
 </head>
 <body>
+    <!-- Google Tag Manager (noscript) : juste après <body> -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PWXXZN4K" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     <div id="cookie-banner">
@@ -180,7 +253,7 @@
             <a href="#intervention">Zones</a>
             <a href="#contact">Contact</a>
         </nav>
-        <a href="tel:0753730112" class="header-cta">☎</a>
+        <a href="tel:0753730112" class="header-cta" data-emplacement="header">☎</a>
     </header>
 
     <section class="hero" id="accueil">
@@ -189,7 +262,7 @@
         <h1>Serrurier Professionnel <br><span>Dépannage & Sécurité 24/7</span></h1>
         <p>Intervention express à Avignon et dans tout le Vaucluse. Devis gratuit et agréé par les plus grandes assurances.</p>
         <div class="hero-btns">
-            <a href="tel:0753730112" class="btn-main">☎ APPEL D'URGENCE</a>
+            <a href="tel:0753730112" class="btn-main" data-emplacement="hero">☎ APPEL D'URGENCE</a>
             <a href="#contact" class="btn-sec">DEMANDER UN DEVIS</a>
         </div>
     </section>
@@ -361,7 +434,7 @@
         <div style="text-align: center; font-size: 0.8rem; opacity: 0.6;">© 2026 SOS SERRURIER AVIGNON & VAUCLUSE</div>
     </footer>
 
-    <a href="tel:0753730112" class="floating-call">☎ 07 53 73 01 12 (24/7)</a>
+    <a href="tel:0753730112" class="floating-call" data-emplacement="bouton_flottant">☎ 07 53 73 01 12 (24/7)</a>
 
     <script>
         const reviews = [
